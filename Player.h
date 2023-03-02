@@ -2,8 +2,6 @@
 #include "Engine/GameObject.h"
 #include "stage.h"
 
-
-//テストシーンを管理するクラス
 class Player : public GameObject
 {
 private:
@@ -12,6 +10,10 @@ private:
 	Stage* pStage_;
 
 	int maxHp_, nowHp_;
+	float dashSpeed_ = 1.5;
+	float slowSpeed_ = 0.5;
+	bool isJumping_;
+
 public:
 	//コンストラクタ
 	//引数：parent  親オブジェクト（SceneManager）
@@ -28,5 +30,4 @@ public:
 
 	//開放
 	void Release() override;
-
 };

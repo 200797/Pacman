@@ -6,7 +6,7 @@
 
 //コンストラクタ
 Player::Player(GameObject* parent)
-	: GameObject(parent, "Player"), hModel_(-1), pStage_(nullptr), maxHp_(180), nowHp_(180)
+	: GameObject(parent, "Player"), hModel_(-1), pStage_(nullptr), maxHp_(180), nowHp_(180), isJumping_(false)
 {
 }
 
@@ -26,41 +26,89 @@ void Player::Update()
 {
 	PrevPosition_ = transform_.position_;
 	XMFLOAT3 fMove = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	if (Input::IsKey(DIK_D)) {
-		fMove.x = 0.1f;
-	}
-	if (Input::IsKey(DIK_A)) {
-		fMove.x = -0.1f;
-	}
-	if (Input::IsKey(DIK_W)) {
-		fMove.z = 0.1f;
-	}
-	if (Input::IsKey(DIK_S)) {
-		fMove.z = -0.1f;
-	}
 
-	////コントローラー操作
+	//キーボード操作
+	//if (Input::IsKey(DIK_D)) {
+	//	fMove.x = 0.1f;
+	//}
+	//if (Input::IsKey(DIK_A)) {
+	//	fMove.x = -0.1f;
+	//}
+	//if (Input::IsKey(DIK_W)) {
+	//	fMove.z = 0.1f;
+	//}
+	//if (Input::IsKey(DIK_S)) {
+	//	fMove.z = -0.1f;
+	//}
 	//fMove.x = Input::GetPadStickL().x;//引数省略は0(1P)
-	//fMove.z = Input::GetPadStickL().y;//sティックはx,yで入力を見てる
-
-	//正規化、斜め移動の速度を抑える
-	XMVECTOR vMove;
-	vMove = XMLoadFloat3(&fMove);
-	vMove = XMVector3Normalize(vMove);//コントローラーにするならコメントアウト
-	vMove *= 0.1;
-	XMStoreFloat3(&fMove, vMove);
+	//fMove.z = Input::GetPadStickL().y;//スティックはx,yで入力を見てる
+	//XMVECTOR vMove;
+	////正規化、斜め移動の速度を抑える
+	//vMove = XMLoadFloat3(&fMove);
+	////vMove = XMVector3Normalize(vMove);
+	//vMove *= 0.1;
+	//XMStoreFloat3(&fMove, vMove);
 
 	transform_.position_.x += fMove.x;
 	transform_.position_.z += fMove.z;
 
+	XMVECTOR vMove;
+	//コントローラー操作
+	if (Input::IsPadButton(XINPUT_GAMEPAD_LEFT_SHOULDER)) {
+		fMove.x = Input::GetPadStickL().x * dashSpeed_;//引数省略は0(1P)
+		fMove.z = Input::GetPadStickL().y * dashSpeed_;//スティックはx,yで入力を見てる
 
-	//向きを変更する処理
+		vMove = XMLoadFloat3(&fMove);
+		vMove *= 0.1;
+		XMStoreFloat3(&fMove, vMove);
 
+		transform_.position_.x += fMove.x;
+		transform_.position_.z += fMove.z;
+	}
+	else if (Input::IsPadButton(XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
+		fMove.x = Input::GetPadStickL().x * slowSpeed_;//引数省略は0(1P)
+		fMove.z = Input::GetPadStickL().y * slowSpeed_;//スティックはx,yで入力を見てる
+
+		vMove = XMLoadFloat3(&fMove);
+		vMove *= 0.1;
+		XMStoreFloat3(&fMove, vMove);
+
+		transform_.position_.x += fMove.x;
+		transform_.position_.z += fMove.z;
+	}
+	else{
+		fMove.x = Input::GetPadStickL().x;//引数省略は0(1P)
+		fMove.z = Input::GetPadStickL().y;//スティックはx,yで入力を見てる
+
+		vMove = XMLoadFloat3(&fMove);
+		vMove *= 0.1;
+		XMStoreFloat3(&fMove, vMove);
+
+		transform_.position_.x += fMove.x;
+		transform_.position_.z += fMove.z;
+	}
+	//ジャンプ
+	if (Input::IsPadButtonDown(XINPUT_GAMEPAD_A) && isJumping_ == false)
+	{
+		for (float y = 0.6; y > 0; y -= 0.1) {
+			transform_.position_.y += y;
+		}
+		isJumping_ = true;
+	}
+	if (transform_.position_.y > 0) {
+		transform_.position_.y -= 0.1f;
+
+	}
+	else {
+		isJumping_ = false;
+	}
+
+	//向きを変更
 	//ベクトルの長さを求める
-	XMVECTOR vLength = XMVector3Length(vMove);//ベクトル型で受け取り
+	XMVECTOR vLength = XMVector3Length(vMove);
 	float length = XMVectorGetX(vLength);
 
-	if (length != 0)//vMoveの長さが0じゃないとき(動いているとき)
+	if (length != 0)
 	{
 		XMVECTOR vFront = { 0,0,1,0 };//奥向き
 		vMove = XMVector3Normalize(vMove);
@@ -78,16 +126,16 @@ void Player::Update()
 	}
 
 	//壁にめり込んだら直前の位置に戻す
-	int checkX1, checkX2;
-	int checkZ1, checkZ2;
+	int checkR, checkL;
+	int checkB, checkF;
 	//右
 	{
-		checkX1 = (int)(transform_.position_.x + 0.3f);
-		checkZ1 = (int)(transform_.position_.z + 0.2f);
-		checkX2 = (int)(transform_.position_.x + 0.3f);
-		checkZ2 = (int)(transform_.position_.z - 0.2f);
+		checkR = (int)(transform_.position_.x + 0.3f);
+		checkB = (int)(transform_.position_.z + 0.2f);
+		checkL = (int)(transform_.position_.x + 0.3f);
+		checkF = (int)(transform_.position_.z - 0.2f);
 
-		if (pStage_->IsWall(checkX1, checkZ1) || pStage_->IsWall(checkX2, checkZ2))//引数：playerの位置
+		if (pStage_->IsWall(checkR, checkB) || pStage_->IsWall(checkL, checkF))//引数：playerの位置
 		{
 			Debug::Log("接触中");
 			transform_.position_.x = (float)((int)transform_.position_.x) + (1.0f - 0.3f);
@@ -95,12 +143,12 @@ void Player::Update()
 	}
 	//左
 	{
-		checkX1 = (int)(transform_.position_.x - 0.3f);
-		checkZ1 = (int)(transform_.position_.z + 0.2f);
-		checkX2 = (int)(transform_.position_.x - 0.3f);
-		checkZ2 = (int)(transform_.position_.z - 0.2f);
+		checkR = (int)(transform_.position_.x - 0.3f);
+		checkB = (int)(transform_.position_.z + 0.2f);
+		checkL = (int)(transform_.position_.x - 0.3f);
+		checkF = (int)(transform_.position_.z - 0.2f);
 
-		if (pStage_->IsWall(checkX1, checkZ1) || pStage_->IsWall(checkX2, checkZ2))//引数：playerの位置
+		if (pStage_->IsWall(checkR, checkB) || pStage_->IsWall(checkL, checkF))//引数：playerの位置
 		{
 			Debug::Log("接触中");
 			transform_.position_.x = (float)((int)transform_.position_.x) + 0.3f;
@@ -108,12 +156,12 @@ void Player::Update()
 	}
 	//奥
 	{
-		checkX1 = (int)(transform_.position_.x + 0.2f);
-		checkZ1 = (int)(transform_.position_.z + 0.3f);
-		checkX2 = (int)(transform_.position_.x - 0.2f);
-		checkZ2 = (int)(transform_.position_.z + 0.3f);
+		checkR = (int)(transform_.position_.x + 0.2f);
+		checkB = (int)(transform_.position_.z + 0.3f);
+		checkL = (int)(transform_.position_.x - 0.2f);
+		checkF = (int)(transform_.position_.z + 0.3f);
 
-		if (pStage_->IsWall(checkX1, checkZ1) || pStage_->IsWall(checkX2, checkZ2))//引数：playerの位置
+		if (pStage_->IsWall(checkR, checkB) || pStage_->IsWall(checkL, checkF))//引数：playerの位置
 		{
 			Debug::Log("接触中");
 			transform_.position_.z = (float)((int)transform_.position_.z) + (1.0f - 0.3f);
@@ -121,27 +169,27 @@ void Player::Update()
 	}
 	//手前
 	{
-		checkX1 = (int)(transform_.position_.x + 0.2f);
-		checkZ1 = (int)(transform_.position_.z - 0.3f);
-		checkX2 = (int)(transform_.position_.x - 0.2f);
-		checkZ2 = (int)(transform_.position_.z - 0.3f);
+		checkR = (int)(transform_.position_.x + 0.2f);
+		checkB = (int)(transform_.position_.z - 0.3f);
+		checkL = (int)(transform_.position_.x - 0.2f);
+		checkF = (int)(transform_.position_.z - 0.3f);
 
-		if (pStage_->IsWall(checkX1, checkZ1) || pStage_->IsWall(checkX2, checkZ2))//引数：playerの位置
+		if (pStage_->IsWall(checkR, checkB) || pStage_->IsWall(checkL, checkF))//引数：playerの位置
 		{
 			Debug::Log("接触中");
 			transform_.position_.z = (float)((int)transform_.position_.z) + 0.3f;
 		}
 	}
-	//Mキーを押すとHPを30増やす
-	if (Input::IsKeyDown(DIK_M)) {
-		nowHp_ += 30;
+
+	//ゲージ増減
+	if (Input::IsPadButton(XINPUT_GAMEPAD_DPAD_RIGHT)) {
+		nowHp_ += 1;
 		if (nowHp_ > maxHp_) {
 			nowHp_ = maxHp_;
 		}
 	}
-	//Nキーを押すとHPを30減らす
-	if (Input::IsKeyDown(DIK_N)) {
-		nowHp_ -= 30;
+	if (Input::IsPadButton(XINPUT_GAMEPAD_DPAD_LEFT)) {
+		nowHp_ -= 1;
 		if (nowHp_ < 0) {
 			nowHp_ = 0;
 		}

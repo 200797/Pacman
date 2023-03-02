@@ -2,28 +2,27 @@
 #include "Engine/csvReader.h"
 #include "Engine/Model.h"
 
-
-//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Stage::Stage(GameObject* parent)
 	: GameObject(parent, "Stage")
 {
 	CsvReader map;
 
 	map.Load("Map.csv");
-	w = map.GetWidth();
-	h = map.GetHeight();
-	table_ = new int* [h];
-	for (int i = 0; i < w; i++) {
-		table_[i] = new int[w];
+	width_ = map.GetWidth();
+	heigth_ = map.GetHeight();
+	table_ = new int* [width_];
+	for (int x = 0; x < width_; x++) {
+		table_[x] = new int[heigth_];
 	}
-	for (int x = w - 1; x >= 0; x--) {
-		for (int z = h - 1; z >= 0; z--) {
-			table_[z][x] = map.GetValue(z, x);
+	for (int x = 0; x < width_; x++) {
+		for (int z = 0; z < heigth_; z++) {
+			table_[x][z] = map.GetValue(x, heigth_ - z -1);
 		}
 	}
 }
 
-//‰Šú‰»
+//åˆæœŸåŒ–
 void Stage::Initialize()
 {
 	const char* fileName[] = { "Floor.fbx","Wall.fbx" };
@@ -33,19 +32,19 @@ void Stage::Initialize()
 	}
 }
 
-//XV
+//æ›´æ–°
 void Stage::Update()
 {
 }
 
-//•`‰æ
+//æç”»
 void Stage::Draw()
 {
 	Transform cluster;
 
-	for (int x = 0; x < 15; x++) {
+	for (int x = 0; x < width_; x++) {
 
-		for (int z = 0; z < 15; z++) {
+		for (int z = 0; z < heigth_; z++) {
 
 			cluster.position_.x = x + 1;
 			cluster.position_.z = z;
@@ -58,10 +57,10 @@ void Stage::Draw()
 	}
 }
 
-//ŠJ•ú
+//é–‹æ”¾
 void Stage::Release()
 {
-	for (int i = 0; i < w; i++) {
+	for (int i = 0; i < width_; i++) {
 		delete[] table_[i];
 	}
 	delete[] table_;

@@ -1,44 +1,42 @@
 #include "Engine/GameObject.h"
-
 enum
 {
 	TYPE_FLOOR,
 	TYPE_WALL,
 	TYPE_MAX
 };
-
-//ƒeƒXƒgƒV[ƒ“‚ğŠÇ—‚·‚éƒNƒ‰ƒX
 class Stage : public GameObject
 {
 private:
 	int hModel_[TYPE_MAX];
 	int** table_;
-	int w, h;
+	int width_, heigth_;
 
 public:
-	//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	//ˆø”Fparent  eƒIƒuƒWƒFƒNƒgiSceneManagerj
+	//ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Fparent  ï¿½eï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½iSceneManagerï¿½j
 	Stage(GameObject* parent);
 
-	//‰Šú‰»
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void Initialize() override;
 
-	//XV
+	//ï¿½Xï¿½V
 	void Update() override;
 
-	//•`‰æ
+	//ï¿½`ï¿½ï¿½
 	void Draw() override;
 
-	//ŠJ•ú
+	//ï¿½Jï¿½ï¿½
 	void Release() override;
 
-	//w’è‚µ‚½ˆÊ’u‚ª•Ç‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN
-	//ˆø”Fx,z@’²‚×‚éˆÊ’u
-	//–ß’lF•Ç=ture/•Ç‚¶‚á‚È‚¢=false
+	//ï¿½wï¿½è‚µï¿½ï¿½ï¿½Ê’uï¿½ï¿½ï¿½Ç‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Fx,zï¿½@ï¿½ï¿½ï¿½×‚ï¿½Ê’u
+	//ï¿½ß’lï¿½Fï¿½ï¿½=ture/ï¿½Ç‚ï¿½ï¿½ï¿½È‚ï¿½=false
 	bool IsWall(int x, int z)
 	{
-		if (table_[x][z] == TYPE_WALL)
+		if (table_[x][z] == TYPE_WALL){
 			return true;
+		}
 		else
 			return false;
 	}

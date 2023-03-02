@@ -3,34 +3,34 @@
 #include "Player.h"
 #include "LifeGauge.h"
 
-//コンストラクタ
+//ﾆ坦ﾆ停愴湛ﾆ暖ﾆ停ｰﾆ誰ﾆ耽
 TestScene::TestScene(GameObject* parent)
 	: GameObject(parent, "TestScene")
 {
 }
 
-//初期化
+//ﾂ鞘ｰﾅﾃｺ窶ｰﾂｻ
 void TestScene::Initialize()
 {
-	Camera::SetPosition(XMFLOAT3(5, 50, -5));
-	Camera::SetTarget(XMFLOAT3(5, 20, 3));
+	Camera::SetPosition(XMFLOAT3(5, 20, -5));
+	Camera::SetTarget(XMFLOAT3(5, 5, 3));
 
 	Instantiate<Stage>(this);
 	Instantiate<Player>(this);
 	Instantiate<LifeGauge>(this);
 }
 
-//更新
+//ﾂ更ﾂ新
 void TestScene::Update()
 {
 }
 
-//描画
+//窶｢`窶ｰﾃｦ
 void TestScene::Draw()
 {
 }
 
-//開放
+//ﾅJ窶｢ﾃｺ
 void TestScene::Release()
 {
 }
